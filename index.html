@@ -78,7 +78,7 @@ button{
 </head>
 
 <body>
-<p class="small">バージョン：2026-09-24-04</p>
+<p class="small">バージョン：2026-09-24-05</p>
 
 <h1>micro:bit × Web地図 ミニサンプル</h1>
 
@@ -401,6 +401,7 @@ async function connect(){
     // --------------------------------------------------------
 
     await txChar.startNotifications();
+    
     txChar.addEventListener("characteristicvaluechanged", (event) => {
     const value = event.target.value;
     const text = new TextDecoder().decode(value).trim();
@@ -409,6 +410,7 @@ async function connect(){
         count += 1;
         document.getElementById("count").textContent = count;
         document.getElementById("last").textContent = text;
+    }
     });
 
 
