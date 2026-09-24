@@ -45,6 +45,7 @@ const UART_TX = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"; // PC → micro:bit
 const UART_RX = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; // micro:bit → PC
 let device=null, rxChar=null; txChar=null;
 let mode="current", current=null, goal=null, routeCells=[];
+let count = 0;
 
 const mapEl=document.getElementById("map");
 const statusEl=document.getElementById("status");
@@ -155,24 +156,16 @@ document.getElementById("send").onclick=async()=>{
 };
 
 
-const service = await server.getPrimaryService("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
 
-const rxCharacteristic = await service.getCharacteristic(UART_RX);
+rxChar=await service.getCharacteristic(UART_RX);
 
-await rxCharacteristic.startNotifications();
+await rxChar.startNotifications();
 
-rxCharacteristic.addEventListener(
+rxChar.addEventListener(
     "characteristicvaluechanged",
     (event) => {
         const value = new TextDecoder().decode(event.target.value);
-        console.log("受信:", value);
-    }
-);
-  
-characteristic.addEventListener("characteristicvaluechanged", (event) => {
-    const text = new TextDecoder().decode(event.target.value);
-
-    console.log("受信:", text);
+        console.log("受信:", text);
 
     count++;
     document.getElementById("count").textContent = count;
@@ -180,6 +173,7 @@ characteristic.addEventListener("characteristicvaluechanged", (event) => {
 });
   
 draw();
+  
 </script>
 </body>
 </html>
