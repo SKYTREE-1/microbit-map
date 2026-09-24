@@ -116,19 +116,21 @@ async function connect(){
       count++;
       document.getElementById("count").textContent=count;
       document.getElementById("last").textContent=text;
-      
-      // -- write log
-      console.log("TX characteristic:", txChar);
-      console.log("TX properties:", txChar.properties);
-      console.log("RX characteristic:", rxChar);
-      console.log("RX properties:", rxChar.properties);
-    //});
+    });
 
     statusEl.textContent="micro:bit：接続しました";
     document.getElementById("disconnect").disabled=false;
   }catch(e){
     statusEl.textContent="接続できませんでした："+e.message;
   }
+  
+  // -- write log
+  console.log("TX characteristic:", txChar);
+  console.log("TX properties:", txChar.properties);
+  console.log("RX characteristic:", rxChar);
+  console.log("RX properties:", rxChar.properties);
+
+  
 }
 document.getElementById("connect").onclick=connect;
 
