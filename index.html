@@ -103,29 +103,26 @@ async function connect(){
     device.addEventListener("gattserverdisconnected",()=>{statusEl.textContent="micro:bit：切断";txChar=null;});
     const server=await device.gatt.connect();
     const service=await server.getPrimaryService(UART_SERVICE);
-
-txChar=await service.getCharacteristic(UART_TX);
-
-// micro:bit → Web の受信
-rxChar=await service.getCharacteristic(UART_RX);
-await rxChar.startNotifications();
-
-rxChar.addEventListener("characteristicvaluechanged", (event)=>{
-  const text=new TextDecoder().decode(event.target.value).trim();
-
-  console.log("受信:", text);
-
-  count++;
-  document.getElementById("count").textContent=count;
-  document.getElementById("last").textContent=text;
-});
-
-// -- write log
-console.log("TX characteristic:", txChar);
-console.log("TX properties:", txChar.properties);
-console.log("RX characteristic:", rxChar);
-console.log("RX properties:", rxChar.properties);
-
+    
+    txChar=await service.getCharacteristic(UART_TX);
+    
+    // micro:bit → Web の受信
+    rxChar=await service.getCharacteristic(UART_RX);
+    await rxChar.startNotifications();
+    
+    rxChar.addEventListener("characteristicvaluechanged", (event)=>{
+      const text=new TextDecoder().decode(event.target.value).trim();
+      console.log("受信:", text);
+      count++;
+      document.getElementById("count").textContent=count;
+      document.getElementById("last").textContent=text;
+      
+      // -- write log
+      console.log("TX characteristic:", txChar);
+      console.log("TX properties:", txChar.properties);
+      console.log("RX characteristic:", rxChar);
+      console.log("RX properties:", rxChar.properties);
+    //});
 
     statusEl.textContent="micro:bit：接続しました";
     document.getElementById("disconnect").disabled=false;
