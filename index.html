@@ -41,8 +41,8 @@ button{font-size:16px;padding:10px 16px;margin:4px;cursor:pointer}
 
 <script>
 const UART_SERVICE = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-const UART_TX = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"; // PC → micro:bit
-const UART_RX = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; // micro:bit → PC
+const UART_RX = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"; // Web → micro:bit
+const UART_TX = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; // micro:bit → Web
 let device=null, rxChar=null; txChar=null;
 let mode="current", current=null, goal=null, routeCells=[];
 let count = 0;
@@ -95,42 +95,59 @@ function makeRoute(){
 document.getElementById("route").onclick=makeRoute;
 
 async function connect(){
-  if(!navigator.bluetooth){alert("このChromeではWeb Bluetoothが利用できません。Windows版Chromeで開いているか確認してください。");return;}
+  if(!navigator.bluetooth){
+    alert("このChromeではWeb Bluetoothが利用できません。Windows版Chromeで開いているか確認してください。");
+    return;
+  }
+
   try{
     statusEl.textContent="micro:bitを選択してください…";
-    //device=await navigator.bluetooth.requestDevice({filters:[{services:[UART_SERVICE]}]});
-    device=await navigator.bluetooth.requestDevice({acceptAllDevices: true,optionalServices: [UART_SERVICE]});
-    device.addEventListener("gattserverdisconnected",()=>{statusEl.textContent="micro:bit：切断";txChar=null;});
+
+    device=await navigator.bluetooth.requestDevice({
+      acceptAllDevices:true,
+      optionalServices:[UART_SERVICE]
+    });
+
+    device.addEventListener("gattserverdisconnected",()=>{
+      statusEl.textContent="micro:bit：切断";
+      txChar=null;
+      rxChar=null;
+    });
+
     const server=await device.gatt.connect();
     const service=await server.getPrimaryService(UART_SERVICE);
+
+    // Web → micro:bit
+    rxChar=await service.getCharacteristic(UART_RX);
+
+    // micro:bit → Web
     txChar=await service.getCharacteristic(UART_TX);
-    
-    // micro:bit → Web の受信
-    //rxChar=await service.getCharacteristic(UART_RX);
-    //await rxChar.startNotifications();
-    
-    //rxChar.addEventListener("characteristicvaluechanged", (event)=>{
-    //  const text=new TextDecoder().decode(event.target.value).trim();
-    //  console.log("受信:", text);
-    //  count++;
-    //  document.getElementById("count").textContent=count;
-    //  document.getElementById("last").textContent=text;
-   // });
+
+    console.log("Web → micro:bit:", rxChar);
+    console.log("micro:bit → Web:", txChar);
+
+    // micro:bit → Web の受信を開始
+    await txChar.startNotifications();
+
+    txChar.addEventListener("characteristicvaluechanged",(event)=>{
+      const text=new TextDecoder().decode(event.target.value).trim();
+
+      console.log("受信:",text);
+
+      count++;
+      document.getElementById("count").textContent=count;
+      document.getElementById("last").textContent=text;
+    });
 
     statusEl.textContent="micro:bit：接続しました";
     document.getElementById("disconnect").disabled=false;
+
   }catch(e){
     statusEl.textContent="接続できませんでした："+e.message;
+    console.error(e);
   }
-  
-  // -- write log
-  console.log("TX characteristic:", txChar);
-  console.log("TX properties:", txChar.properties);
-  //console.log("RX characteristic:", rxChar);
-  //console.log("RX properties:", rxChar.properties);
-
-  
 }
+  
 document.getElementById("connect").onclick=connect;
 
 document.getElementById("disconnect").onclick=()=>{
@@ -138,18 +155,21 @@ document.getElementById("disconnect").onclick=()=>{
 };
 
 async function sendChar(ch){
-  if(!txChar){alert("先にmicro:bitへ接続してください。");return;}
-  try {
-    const data = new TextEncoder().encode(ch + "\n");
-    //await txChar.writeValue(data);
-    await txChar.writeValueWithoutResponse(data);
-    statusEl.textContent = "micro:bitへ送信: " + ch;
-  } catch(e) {
-    statusEl.textContent = "送信エラー: " + e.message;
+  if(!rxChar){
+    alert("先にmicro:bitへ接続してください。");
+    return;
+  }
+
+  try{
+    const data=new TextEncoder().encode(ch+"\n");
+    await rxChar.writeValue(data);
+
+    statusEl.textContent="micro:bitへ送信: "+ch;
+
+  }catch(e){
+    statusEl.textContent="送信エラー: "+e.message;
     console.error(e);
   }
-  //const data=new TextEncoder().encode(ch+"\n");
-  //await txChar.writeValue(data);
 }
 
 document.getElementById("send").onclick=async()=>{
