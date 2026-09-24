@@ -36,6 +36,9 @@ button{font-size:16px;padding:10px 16px;margin:4px;cursor:pointer}
 <p id="info">現在地：未設定　目的地：未設定</p>
 <p class="small">このサンプルでは、経路は上下左右に進む単純な経路です。実際の建物の地図ではありません。</p>
 
+<div>受信回数：<span id="count">0</span></div>
+<div>最後に受信：<span id="last">---</span></div>  
+
 <script>
 const UART_SERVICE = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
 const UART_RX = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; // PC → micro:bit
@@ -149,6 +152,17 @@ document.getElementById("send").onclick=async()=>{
   }
   await sendChar("X");
 };
+
+characteristic.addEventListener("characteristicvaluechanged", (event) => {
+    const text = new TextDecoder().decode(event.target.value);
+
+    console.log("受信:", text);
+
+    count++;
+    document.getElementById("count").textContent = count;
+    document.getElementById("last").textContent = text;
+});
+  
 draw();
 </script>
 </body>
