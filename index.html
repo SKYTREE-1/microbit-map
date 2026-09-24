@@ -402,6 +402,9 @@ async function connect(){
     // micro:bit → Web の受信を開始
     // --------------------------------------------------------
 
+
+    console.log("TX properties:", txChar.properties);
+    
     if(!txChar.properties.notify){
 
       throw new Error(
