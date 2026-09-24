@@ -173,22 +173,6 @@ document.getElementById("send").onclick=async()=>{
   await sendChar("X");
 };
 
-
-
-rxChar=await service.getCharacteristic(UART_RX);
-
-await rxChar.startNotifications();
-
-rxChar.addEventListener(
-    "characteristicvaluechanged",
-    (event) => {
-        const value = new TextDecoder().decode(event.target.value);
-        console.log("受信:", text);
-
-    count++;
-    document.getElementById("count").textContent = count;
-    document.getElementById("last").textContent = text;
-});
   
 draw();
   
