@@ -113,8 +113,16 @@ document.getElementById("disconnect").onclick=()=>{
 
 async function sendChar(ch){
   if(!rxChar){alert("先にmicro:bitへ接続してください。");return;}
-  const data=new TextEncoder().encode(ch+"\n");
-  await rxChar.writeValue(data);
+  try {
+    const data = new TextEncoder().encode(ch + "\n");
+    await rxChar.writeValue(data);
+    statusEl.textContent = "micro:bitへ送信: " + ch;
+  } catch(e) {
+    statusEl.textContent = "送信エラー: " + e.message;
+    console.error(e);
+  }
+  //const data=new TextEncoder().encode(ch+"\n");
+  //await rxChar.writeValue(data);
 }
 
 document.getElementById("send").onclick=async()=>{
