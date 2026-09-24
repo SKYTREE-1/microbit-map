@@ -404,47 +404,7 @@ async function connect(){
 
 
     console.log("TX properties:", txChar.properties);
-    
-    if(!txChar.properties.notify){
-
-      throw new Error(
-        "NUS TXに通知機能がありません。"
-      );
-    }
-
-    await txChar.startNotifications();
-
-
-    txChar.addEventListener(
-      "characteristicvaluechanged",
-      event => {
-
-        const value =
-          new TextDecoder().decode(
-            event.target.value
-          );
-
-        const received =
-          value.trim();
-
-        if(!received){
-          return;
-        }
-
-        count++;
-
-        document.getElementById("count").textContent =
-          count;
-
-        document.getElementById("last").textContent =
-          received;
-
-        console.log(
-          "micro:bit → Web:",
-          received
-        );
-      }
-    );
+    console.log("RX properties:", rxChar.properties);
 
 
     statusEl.textContent =
