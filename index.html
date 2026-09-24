@@ -99,6 +99,11 @@ async function connect(){
     const server=await device.gatt.connect();
     const service=await server.getPrimaryService(UART_SERVICE);
     rxChar=await service.getCharacteristic(UART_RX);
+
+    // -- write log
+    console.log("characteristic:", rxChar);
+    console.log("properties:", rxChar.properties);
+    
     statusEl.textContent="micro:bit：接続しました";
     document.getElementById("disconnect").disabled=false;
   }catch(e){
