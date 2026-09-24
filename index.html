@@ -141,7 +141,8 @@ async function sendChar(ch){
   if(!txChar){alert("先にmicro:bitへ接続してください。");return;}
   try {
     const data = new TextEncoder().encode(ch + "\n");
-    await txChar.writeValue(data);
+    //await txChar.writeValue(data);
+    await txChar.writeValueWithoutResponse(data);
     statusEl.textContent = "micro:bitへ送信: " + ch;
   } catch(e) {
     statusEl.textContent = "送信エラー: " + e.message;
