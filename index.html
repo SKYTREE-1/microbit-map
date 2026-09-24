@@ -510,6 +510,8 @@ document.getElementById("send").onclick =
 
     makeRoute();
 
+    await sendChar("S");
+
 
     // 現在地と目的地が同じ場合
     if(!routeCells.length){
@@ -519,6 +521,7 @@ document.getElementById("send").onclick =
       return;
     }
 
+  
 
     for(let i = 0; i < routeCells.length; i++){
 
