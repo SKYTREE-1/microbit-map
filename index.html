@@ -377,8 +377,7 @@ async function connect(){
 
     const server = await device.gatt.connect();
 
-    const service =
-      await server.getPrimaryService(UART_SERVICE);
+    const service = await server.getPrimaryService(UART_SERVICE);
 
 
     // --------------------------------------------------------
@@ -386,8 +385,7 @@ async function connect(){
     // micro:bit → Web
     // --------------------------------------------------------
 
-    txChar =
-      await service.getCharacteristic(UART_TX);
+    txChar = await service.getCharacteristic(UART_TX);
 
 
     // --------------------------------------------------------
@@ -395,13 +393,23 @@ async function connect(){
     // Web → micro:bit
     // --------------------------------------------------------
 
-    rxChar =
-      await service.getCharacteristic(UART_RX);
+    rxChar = await service.getCharacteristic(UART_RX);
 
 
     // --------------------------------------------------------
     // micro:bit → Web の受信を開始
     // --------------------------------------------------------
+
+    await txChar.startNotifications();
+    txChar.addEventListener("characteristicvaluechanged", (event) => {
+    const value = event.target.value;
+    const text = new TextDecoder().decode(value).trim();
+
+    if (text) {
+        count += 1;
+        document.getElementById("count").textContent = count;
+        document.getElementById("last").textContent = text;
+    });
 
 
     console.log("TX properties:", txChar.properties);
