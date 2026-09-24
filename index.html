@@ -41,7 +41,8 @@ button{font-size:16px;padding:10px 16px;margin:4px;cursor:pointer}
 
 <script>
 const UART_SERVICE = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-const UART_RX = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; // PC → micro:bit
+const UART_TX = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"; // PC → micro:bit
+const UART_RX = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; // micro:bit → PC
 let device=null, rxChar=null;
 let mode="current", current=null, goal=null, routeCells=[];
 
@@ -98,14 +99,14 @@ async function connect(){
     statusEl.textContent="micro:bitを選択してください…";
     //device=await navigator.bluetooth.requestDevice({filters:[{services:[UART_SERVICE]}]});
     device=await navigator.bluetooth.requestDevice({acceptAllDevices: true,optionalServices: [UART_SERVICE]});
-    device.addEventListener("gattserverdisconnected",()=>{statusEl.textContent="micro:bit：切断";rxChar=null;});
+    device.addEventListener("gattserverdisconnected",()=>{statusEl.textContent="micro:bit：切断";txChar=null;});
     const server=await device.gatt.connect();
     const service=await server.getPrimaryService(UART_SERVICE);
-    rxChar=await service.getCharacteristic(UART_RX);
+    txChar=await service.getCharacteristic(UART_TX);
 
     // -- write log
-    console.log("characteristic:", rxChar);
-    console.log("properties:", rxChar.properties);
+    console.log("characteristic:", txChar);
+    console.log("properties:", txChar.properties);
     
     statusEl.textContent="micro:bit：接続しました";
     document.getElementById("disconnect").disabled=false;
@@ -120,17 +121,17 @@ document.getElementById("disconnect").onclick=()=>{
 };
 
 async function sendChar(ch){
-  if(!rxChar){alert("先にmicro:bitへ接続してください。");return;}
+  if(!txChar){alert("先にmicro:bitへ接続してください。");return;}
   try {
     const data = new TextEncoder().encode(ch + "\n");
-    await rxChar.writeValue(data);
+    await txChar.writeValue(data);
     statusEl.textContent = "micro:bitへ送信: " + ch;
   } catch(e) {
     statusEl.textContent = "送信エラー: " + e.message;
     console.error(e);
   }
   //const data=new TextEncoder().encode(ch+"\n");
-  //await rxChar.writeValue(data);
+  //await txChar.writeValue(data);
 }
 
 document.getElementById("send").onclick=async()=>{
@@ -153,6 +154,21 @@ document.getElementById("send").onclick=async()=>{
   await sendChar("X");
 };
 
+
+const service = await server.getPrimaryService("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
+
+const rxCharacteristic = await service.getCharacteristic(UART_RX);
+
+await rxCharacteristic.startNotifications();
+
+rxCharacteristic.addEventListener(
+    "characteristicvaluechanged",
+    (event) => {
+        const value = new TextDecoder().decode(event.target.value);
+        console.log("受信:", value);
+    }
+);
+  
 characteristic.addEventListener("characteristicvaluechanged", (event) => {
     const text = new TextDecoder().decode(event.target.value);
 
