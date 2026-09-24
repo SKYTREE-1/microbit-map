@@ -93,7 +93,8 @@ async function connect(){
   if(!navigator.bluetooth){alert("このChromeではWeb Bluetoothが利用できません。Windows版Chromeで開いているか確認してください。");return;}
   try{
     statusEl.textContent="micro:bitを選択してください…";
-    device=await navigator.bluetooth.requestDevice({filters:[{services:[UART_SERVICE]}]});
+    //device=await navigator.bluetooth.requestDevice({filters:[{services:[UART_SERVICE]}]});
+    device=await navigator.bluetooth.requestDevice({acceptAllDevices: true,optionalServices: [UART_SERVICE]});
     device.addEventListener("gattserverdisconnected",()=>{statusEl.textContent="micro:bit：切断";rxChar=null;});
     const server=await device.gatt.connect();
     const service=await server.getPrimaryService(UART_SERVICE);
